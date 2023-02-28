@@ -50,7 +50,8 @@ public class CannonBehavior : MonoBehaviour
         m_XRotation = Mathf.Clamp(m_XRotation, -m_XMax, m_XMax);
         m_YRotation = Mathf.Clamp(m_YRotation, -m_YMax, m_YMax);
 
-        CannonBody.rotation = Quaternion.Euler(0, m_XRotation, 0);
+        // The Cannon Body is using localRotation to match the rotation of the tower in different positions
+        CannonBody.localRotation = Quaternion.Euler(0, m_XRotation, 0);
         CannonBarrelPivot.rotation = Quaternion.Euler(m_YRotation, transform.eulerAngles.y, 0);
     }
 
@@ -80,8 +81,6 @@ public class CannonBehavior : MonoBehaviour
             while(timer > 0)
             {
                 timer -= Time.deltaTime;
-
-                Debug.Log($"Reloading for {timer}s");
 
                 yield return null;
             }

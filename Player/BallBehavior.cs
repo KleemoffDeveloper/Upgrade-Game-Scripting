@@ -13,6 +13,7 @@ public class BallBehavior : MonoBehaviour
         [Header("Attributes")]
         public float damage;
         public float force;
+        public float splashRadius;
     }
 
     public Ball BallInfo;
@@ -50,13 +51,24 @@ public class BallBehavior : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        // If you collided with an enemy, decrease their health by BallInfo.damage;
-        if(other.GetComponent<EnemyBehavior>() != null)
+        // All of the enemies inside of the splash radius will recieve knockback and damage
+        foreach (var enemy in GameObject.FindObjectsOfType<EnemyBehavior>())
         {
-            
+            float distance = Vector3.Distance(transform.position, enemy.transform.position);
+
+            if (distance <= BallInfo.splashRadius)
+            { 
+                var behavior = enemy.GetComponent<EnemyBehavior>();
+
+                var rigibody = enemy.GetComponent<Rigidbody>();
+
+                behavior.EnemyInfo.health -= BallInfo.damage;
+
+                rigibody.AddExplosionForce(BallInfo.force / 4, transform.position, distance * BallInfo.splashRadius, 1f);
+            }
         }
 
-        foreach(var effect in explosionEffects)
+        foreach (var effect in explosionEffects)
         {
             Instantiate(effect, transform.position, Quaternion.identity);
         }
