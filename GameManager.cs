@@ -2,6 +2,9 @@ using UnityEngine;
 
 public class GameManager : MonoBehaviour
 {
+    [Header("Game State")]
+    public bool roundActive = false;
+
     private void Start()
     {
         Update3DUI(true);

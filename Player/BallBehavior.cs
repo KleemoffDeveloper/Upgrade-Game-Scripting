@@ -70,7 +70,7 @@ public class BallBehavior : MonoBehaviour
 
         foreach (var effect in explosionEffects)
         {
-            Instantiate(effect, transform.position, Quaternion.identity);
+            Instantiate(effect, transform.position + Vector3.up, Quaternion.identity);
         }
 
         Destroy(gameObject);
