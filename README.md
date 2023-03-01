@@ -1,6 +1,6 @@
 # What is this?
 <p>
-This is the "Scripts" folder from my Unity project. I will be pushing all of the changes I make to the scripts all the way up until the release
+This is the "Scripts" folder from my Unity project for a game I'm working on called <em>Upgrade!</em>. I will be pushing all of the changes I make to the scripts all the way up until the release
 of the game.
 </p>
 My Local Repository: Upgrade\!/Assets/Scripts
