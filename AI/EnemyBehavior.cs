@@ -1,4 +1,6 @@
 using System.Collections;
+using Unity.VisualScripting;
+using UnityEditor.Rendering.Universal.ShaderGUI;
 using UnityEngine;
 
 public class EnemyBehavior : MonoBehaviour
@@ -39,29 +41,29 @@ public class EnemyBehavior : MonoBehaviour
 
         for (int i = 0; i < Enemies.Length; i++)
         {
-            if (Enemies[i] == gameObject)
+            if (Enemies[i].gameObject == gameObject)
             {
                 EnemyInfo.id = i;
             }
         }
 
         StartCoroutine(AutoCleanup());
-
-        FindPath(new Vector3(5, 0, 10));
     }
 
     private void FixedUpdate()
     {
         if (gameManager.roundActive)
         {
-            // Makes the enemy rotate towards (look at) the active target when there are no obstacles in the path
+            // Makes the enemy rotate towards (look at) the active target when there are no obstacles in the path or when their "bottoms" aren't touching the ground
             if (!IsGroundDown() || !ObstacleInPath())
             {
                 FixRotation(target.position);
             }
-
-            // Makes the enemy move towards the active target while dodging obstacles
-            FindPath(target.position);
+            // If there are obstacles in the path, the enemy will rotate towards the directions where there are no obstacles
+            else if (ObstacleInPath())
+            {
+                FindDirection();
+            }
         }
     }
 
@@ -82,6 +84,11 @@ public class EnemyBehavior : MonoBehaviour
         }
     }
 
+    void FindDirection()
+    {
+
+    }
+
     IEnumerator AutoCleanup()
     {
         while (true)
@@ -96,13 +103,18 @@ public class EnemyBehavior : MonoBehaviour
     }
 
     // Limited to 5 observable directions
-    GameObject[] obstacles = new GameObject[5];
+    [System.Serializable]
+    public struct Obstacle
+    {
+        public GameObject m_gameObject;
+        public int m_direction;
+    }
+    public Obstacle[] obstacles = new Obstacle[5];
     Ray[] rays = new Ray[5];
+    int[] directions = { -90, -45, 0, 45, 90 };
     void ObstacleDetection()
     {
         // Projects rays around this object and if they hit something that isn't "Enemy" then add that obstacle the array
-
-        int[] directions = { -90, -45, 0, 45, 90 };
 
         RaycastHit[] hits = new RaycastHit[rays.Length];
 
@@ -117,12 +129,14 @@ public class EnemyBehavior : MonoBehaviour
 
             if (Physics.Raycast(rays[i], out hits[i], EnemyInfo.viewDistance, ~LayerMask.GetMask(avoidLayers)))
             {
-                obstacles[i] = hits[i].transform.gameObject;
+                obstacles[i].m_gameObject = hits[i].transform.gameObject;
+                obstacles[i].m_direction = directions[i];
                 Debug.DrawRay(rays[i].origin, rays[i].direction * EnemyInfo.viewDistance, Color.red);
             }
             else
             {
-                obstacles[i] = null;
+                obstacles[i].m_gameObject = null;
+                obstacles[i].m_direction = 0;
                 Debug.DrawRay(rays[i].origin, rays[i].direction * EnemyInfo.viewDistance, Color.green);
             }
         }
@@ -137,20 +151,18 @@ public class EnemyBehavior : MonoBehaviour
         return Physics.Raycast(ray, out hit, GetComponent<Collider>().bounds.extents.y, ~LayerMask.GetMask("Ground"));
     }
 
-    void FindPath(Vector3 destination)
-    {
-        // Rays from each observable direction
-        Ray neg90 = rays[0];
-        Ray neg45 = rays[1];
-        Ray zero = rays[2];
-        Ray pos45 = rays[3];
-        Ray pos90 = rays[4];
-
-        // Avoids the directions in which the rays are touching an obstruction
-    }
-
     bool ObstacleInPath()
     {
-        return obstacles[0] != null;
+        foreach(var obstacle in obstacles)
+        {
+            if(obstacle.m_gameObject != null)
+            {
+                Debug.Log("Obstacle in path...");
+                return true;
+            }
+        }
+
+        Debug.Log("No obstacles...");
+        return false;
     }
 }
